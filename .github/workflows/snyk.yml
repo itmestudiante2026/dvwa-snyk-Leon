@@ -25,7 +25,7 @@ jobs:
       - name: Authenticate Snyk
         run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
-     
-- name: Run Snyk Test
-  run: snyk test || true
+      - name: Run Snyk Test
+        run: snyk test || true
+        
 
