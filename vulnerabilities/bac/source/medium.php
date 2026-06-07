@@ -3,9 +3,19 @@ if (!defined('DVWA_WEB_PAGE_TO_ROOT')) {
     define('DVWA_WEB_PAGE_TO_ROOT', '../../../');
 }
 
-// Get current user's ID
-$query = "SELECT user_id FROM users WHERE user = '" . dvwaCurrentUser() . "';";
-$result = mysqli_query($GLOBALS["___mysqli_ston"], $query);
+// Get current user's In
+
+$current_user = dvwaCurrentUser();
+
+$stmt = mysqli_prepare($GLOBALS["___mysqli_ston"], 
+    "SELECT user_id FROM users WHERE user = ?"
+);
+
+mysqli_stmt_bind_param($stmt, "s", $current_user);
+mysqli_stmt_execute($stmt);
+
+$result = mysqli_stmt_get_result($stmt);
+
 $current_user_id = ($result && mysqli_num_rows($result) > 0) ? mysqli_fetch_assoc($result)['user_id'] : 0;
 
 // Basic attempt at access control (but easily bypassed)
@@ -14,19 +24,35 @@ if (isset($_GET['action']) && isset($_GET['user_id'])) {
     if (!preg_match('/^\d+$/', $_GET['user_id'])) {
         $html .= "<p>Invalid user ID format. Please enter a number.</p>";
     } else {
-        $id = $_GET['user_id'];
+        $id = intval($_GET['user_id']);
         $user_exists = false;
         
         // Check if user exists first
-        $check_query = "SELECT user_id FROM users WHERE user_id = '$id'";
-        $check_result = mysqli_query($GLOBALS["___mysqli_ston"], $check_query);
+
+	$stmt = mysqli_prepare($GLOBALS["___mysqli_ston"], 
+    "SELECT user_id FROM users WHERE user_id = ?"
+);
+
+	mysqli_stmt_bind_param($stmt, "i", $id);
+	mysqli_stmt_execute($stmt);
+
+	$check_result = mysqli_stmt_get_result($stmt);
+
         $user_exists = ($check_result && mysqli_num_rows($check_result) > 0);
         
         // "Secure" check that's easily bypassed
         if (isset($_GET['token']) && $_GET['token'] == 'user_token') {
             if ($user_exists) {
-                $query = "SELECT first_name, last_name, user_id, avatar FROM users WHERE user_id = '$id';";
-                $result = mysqli_query($GLOBALS["___mysqli_ston"], $query);
+                
+	$stmt = mysqli_prepare($GLOBALS["___mysqli_ston"], 
+    "SELECT first_name, last_name, user_id, avatar FROM users WHERE user_id = ?"
+);
+
+	mysqli_stmt_bind_param($stmt, "i", $id);
+	mysqli_stmt_execute($stmt);
+
+	$result = mysqli_stmt_get_result($stmt);
+
                 
                 if ($result && mysqli_num_rows($result) > 0) {
                     $row = mysqli_fetch_assoc($result);

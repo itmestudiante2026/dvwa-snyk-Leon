@@ -3,7 +3,7 @@
 if( isset( $_REQUEST[ 'Submit' ] ) ) {
 
     // Mejor usar GET específicamente
-    $id = $_GET['id'];
+    $id = intval($_GET['id']);
 
     switch ($_DVWA['SQLI_DB']) {
 
@@ -60,3 +60,4 @@ if( isset( $_REQUEST[ 'Submit' ] ) ) {
 }
 
 ?>
+
